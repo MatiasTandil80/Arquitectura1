@@ -4,9 +4,9 @@ public class Ej2f_ResponseDTO {
 
     private Long idCarrera;
     private String nombre;
-    private int cantidadInscriptos;
+    private Long cantidadInscriptos;
 
-    public Ej2f_ResponseDTO(Long idCarrera, String nombre, int cantidadInscriptos) {
+    public Ej2f_ResponseDTO(Long idCarrera, String nombre, Long cantidadInscriptos) {
         this.idCarrera = idCarrera;
         this.nombre = nombre;
         this.cantidadInscriptos = cantidadInscriptos;

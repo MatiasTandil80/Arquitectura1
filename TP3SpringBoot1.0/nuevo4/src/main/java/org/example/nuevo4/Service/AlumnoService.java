@@ -68,8 +68,10 @@ public class AlumnoService {
 
     @Transactional(readOnly = true)
     public Alumno findById(Long id) {
+        System.out.println("El DNI es "+id);
         Alumno alumno = this.alumnoRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("No existe el alumno con el id: ", id));
+        System.out.println(alumno);
         return alumno;
     }
 

@@ -1,6 +1,8 @@
 package org.example.nuevo4.Service;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.example.nuevo4.DTO.Ej2f_ResponseDTO;
@@ -8,12 +10,15 @@ import org.example.nuevo4.DTO.Ej3DTOConsulta;
 import org.example.nuevo4.DTO.Ej3DTOResultado;
 import org.example.nuevo4.Entities.Alumno;
 import org.example.nuevo4.Entities.AlumnoCarrera;
+import org.example.nuevo4.Entities.Carrera;
 import org.example.nuevo4.Repositories.AlumnoCarreraRepository;
 import org.example.nuevo4.DTO.AlumnoCarrera.AlumnoCarreraRequestDTO;
 import org.example.nuevo4.DTO.AlumnoCarrera.AlumnoCarreraResponseDTO;
 import lombok.RequiredArgsConstructor;
 //import lombok.var;
 
+import org.example.nuevo4.Repositories.AlumnoRepository;
+import org.example.nuevo4.Repositories.CarreraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,16 +34,37 @@ public class AlumnoCarreraService {
 
     @Autowired
     private AlumnoCarreraRepository alumnoCarreraRepository;
+    @Autowired
+    private AlumnoService alumnoService;
+    @Autowired
+    private CarreraService carreraService;
 
     @Transactional
-    public AlumnoCarrera insert(AlumnoCarrera alumnoCarrera) {
-        //AlumnoCarrera alumnoCarreraResponseDTO = new AlumnoCarreraResponseDTO(new AlumnoCarrera());
+    public AlumnoCarrera insert(Long nroLibreta, Long dniAlumno, Long idCarrera, LocalDate fechaInscripcion) {
+
+        Alumno alumno = alumnoService.findById(dniAlumno);
+        if (alumno != null)  {
+            System.out.println("Alumno  existe");
+        }
+
+        Carrera carrera = carreraService.findById(idCarrera);
+        if(carrera != null)  {
+            System.out.println("Carrera existe");
+        }
+
+        if(!alumnoCarreraRepository.existsByDniAndIdCarrera(dniAlumno, idCarrera)){
+            System.out.println("Alumno carrera no existe");
+        }
+
 
         try {
-            if (!alumnoCarreraRepository.existsByDniAndIdCarrera(alumnoCarrera.getAlumno().getDni(), alumnoCarrera.getCarrera().getIdCarrera())) {
-                //final var alumnoCarrera = new AlumnoCarrera(alumnoCarreraRequestDTO.getFechaInscripcion(), alumnoCarreraRequestDTO.getNroLibreta());
+             if ((alumno != null) && (carrera != null) &&
+                     (!alumnoCarreraRepository.existsByDniAndIdCarrera(dniAlumno, idCarrera))) {
+
+                AlumnoCarrera alumnoCarrera = new AlumnoCarrera(nroLibreta, alumno, carrera, fechaInscripcion);
+                System.out.println(alumnoCarrera);
                 final var result = alumnoCarreraRepository.save(alumnoCarrera);
-                //alumnoCarreraResponseDTO = new AlumnoCarreraResponseDTO(result.getNroLibreta(), result.getAlumno(),
+                System.out.println(result);
                 return result;
             }
 
@@ -49,13 +75,26 @@ public class AlumnoCarreraService {
     }
 
     @Transactional
-    public AlumnoCarreraResponseDTO update(AlumnoCarreraRequestDTO alumnoCarreraRequestDTO) {
+    public AlumnoCarrera update(AlumnoCarreraRequestDTO alumnoCarreraRequestDTO) {
         try {
-            if (alumnoCarreraRepository.existsById(alumnoCarreraRequestDTO.getIdAlumnoCarrera())) {
-                final var alumnoCarrera = new AlumnoCarrera(alumnoCarreraRequestDTO.getFechaInscripcion(), alumnoCarreraRequestDTO.getNroLibreta());
-                final var result = this.alumnoCarreraRepository.save(alumnoCarrera);
-                return new AlumnoCarreraResponseDTO(result.getNroLibreta(), result.getAlumno(),
-                        result.getCarrera());
+            Alumno alumno = alumnoService.findById(alumnoCarreraRequestDTO.getDni());
+            Carrera carrera = carreraService.findById(alumnoCarreraRequestDTO.getIdCarrera());
+            Long idAlumnoCarrera = alumnoCarreraRequestDTO.getIdAlumnoCarrera();
+            Optional<AlumnoCarrera> alumnoCarrera = alumnoCarreraRepository.findById(idAlumnoCarrera);
+
+            if ((alumnoCarrera.isPresent()) && (alumno != null) && (carrera != null)) {
+                System.out.println("Entro al IF del update de AlumnoCarreraService");
+                //final var alumnoCarrera = new AlumnoCarrera(alumnoCarreraRequestDTO.getNroLibreta(), alumno, carrera, alumnoCarreraRequestDTO.getFechaInscripcion());
+                alumnoCarrera.get().setNroLibreta(alumnoCarreraRequestDTO.getNroLibreta());
+                alumnoCarrera.get().setAlumno(alumno);
+                alumnoCarrera.get().setCarrera(carrera);
+                alumnoCarrera.get().setFechaInscripcion(alumnoCarreraRequestDTO.getFechaInscripcion());
+                alumnoCarrera.get().setFechaGraduacion(alumnoCarreraRequestDTO.getFechaGraduacion());
+                System.out.println("El AlumnoCarrera es: " + alumnoCarrera.get());
+
+                final var result = alumnoCarreraRepository.save(alumnoCarrera.get());
+                System.out.println("El alumnoCarrera insertado es: " + result);
+                return result;
             }
         } catch (RuntimeException e) {
             System.out.println("El alumnoCarrera que quiere ingresar ya existe");
@@ -99,11 +138,9 @@ public class AlumnoCarreraService {
     public Alumno findByLibreta(Long nroLibreta) {
         List<Alumno> alumno = this.alumnoCarreraRepository.findByLibreta(nroLibreta);
 
-
         if (alumno.isEmpty()) {
             throw new NotFoundException("No existe el alumno con la Libreta: " + nroLibreta);
         }
-
         return alumno.get(0);
     }
 

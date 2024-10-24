@@ -67,8 +67,10 @@ public class CarreraService {
 
     @Transactional(readOnly = true)
     public Carrera findById(Long id) {
+        System.out.println("El idCarrera es " + id);
         Carrera carrera = this.carreraRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("No existe la carrera con el id: ", id));
+        System.out.println(carrera);
         return carrera;
     }
 

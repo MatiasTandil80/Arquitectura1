@@ -3,6 +3,7 @@ package org.example.nuevo4.Entities;
 import jakarta.persistence.*;
 import org.example.nuevo4.Service.AlumnoService;
 import org.example.nuevo4.Service.CarreraService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 
@@ -46,20 +47,16 @@ public class AlumnoCarrera {
         this.nroLibreta = nroLibreta;
     }
 
-    public AlumnoCarrera(Long nroLibreta, Long dniAlumno, Long idCarrera, LocalDate fechaInscripcion ) {
-        AlumnoService alumnoService = new AlumnoService();
-        CarreraService carreraService = new CarreraService();
+    public AlumnoCarrera(Long nroLibreta, Alumno alumno, Carrera carrera, LocalDate fechaInscripcion ) {
 
         System.out.println("CONSTRUCTOR 2");
 
         try {
             this.nroLibreta = nroLibreta;
-
-            // Suponiendo que findById puede lanzar una excepción
-            this.alumno = alumnoService.findById(nroLibreta);
-            this.carrera = carreraService.findById(idCarrera);
-
+            this.alumno = alumno;
+            this.carrera = carrera;
             this.fechaInscripcion = fechaInscripcion;
+
         } catch (EntityNotFoundException e) {
             // Manejo de la excepción si no se encuentra la entidad
             System.err.println("No se encontró la entidad: " + e.getMessage());
@@ -88,6 +85,8 @@ public class AlumnoCarrera {
 
     }
 
+    public void setIdAlumnoCarrera(Long idAlumnoCarrera) { this.idAlumnoCarrera = idAlumnoCarrera; }
+
     public void setAlumno(Alumno alumno) {
         this.alumno = alumno;
     }
@@ -111,6 +110,8 @@ public class AlumnoCarrera {
     public LocalDate getFechaInscripcion() {
         return fechaInscripcion;
     }
+
+    public void setFechaInscripcion(LocalDate fechaInscripcion) { this.fechaInscripcion = fechaInscripcion; }
 
     public LocalDate getFechaGraduacion() { return fechaGraduacion; }
 

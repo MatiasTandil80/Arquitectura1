@@ -17,7 +17,7 @@ import java.util.List;
 @Repository
 public interface AlumnoCarreraRepository extends JpaRepository<AlumnoCarrera, Long> {
 
-    @Query ("SELECT CASE WHEN COUNT() > 0 THEN true ELSE false END" +
+    @Query ("SELECT CASE WHEN COUNT(*) > 0 THEN true ELSE false END" +
             " FROM AlumnoCarrera ac WHERE ac.alumno.dni = :dni AND ac.carrera.idCarrera = :idCarrera")
     Boolean existsByDniAndIdCarrera(@Param ("dni") Long dni, @Param("idCarrera") Long idCarrera);
 

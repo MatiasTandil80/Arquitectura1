@@ -1,5 +1,7 @@
 package org.example.nuevo4.Controller;
 
+import jakarta.persistence.EntityNotFoundException;
+import org.example.nuevo4.DTO.AlumnoCarrera.AlumnoCarreraControllerDTO;
 import org.example.nuevo4.Entities.AlumnoCarrera;
 import org.example.nuevo4.Service.AlumnoCarreraService;
 import org.example.nuevo4.DTO.AlumnoCarrera.AlumnoCarreraRequestDTO;
@@ -22,10 +24,14 @@ public class AlumnoCarreraController {
 
 
     @PostMapping("")
-    public ResponseEntity<?> insert(@RequestBody Long nroLibreta, Long dniAlumno, Long idCarrera, LocalDate fechaInscripcion){
-        try{                                                                               //Long idAlumnoCarrera, int nroLibreta, Alumno alumno, Carrera carrera, LocalDate fechaInscripcion
-            AlumnoCarrera alumnoCarrera = new AlumnoCarrera(nroLibreta, dniAlumno, idCarrera, fechaInscripcion);
-            return ResponseEntity.status(HttpStatus.OK).body(alumnoCarreraService.insert(alumnoCarrera));
+    public ResponseEntity<?> insert(@RequestBody AlumnoCarreraControllerDTO alumnoCarreraControllerDTO){
+        try{                //Long idAlumnoCarrera, int nroLibreta, Alumno alumno, Carrera carrera, LocalDate fechaInscripcion
+
+            System.out.println("Entro insert de AlumnoCarreraController");
+
+            //AlumnoCarrera alumnoCarrera = new AlumnoCarrera(nroLibreta, dniAlumno, idCarrera, fechaInscripcion);
+            return ResponseEntity.status(HttpStatus.OK).body(alumnoCarreraService.insert(alumnoCarreraControllerDTO.getNroLibreta(),alumnoCarreraControllerDTO.getDni(),
+                    alumnoCarreraControllerDTO.getIdCarrera(),alumnoCarreraControllerDTO.getFechaInscripcion()));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error. No se pudo ingresar, revise los campos e intente nuevamente.\"}");
         }
@@ -33,9 +39,10 @@ public class AlumnoCarreraController {
 
 
     @PutMapping("")
-    public ResponseEntity<?> update(@RequestBody AlumnoCarreraRequestDTO alumnoCarrera){
+    public ResponseEntity<?> update(@RequestBody AlumnoCarreraRequestDTO alumnoCarreraRequestDTO){
         try{
-            return ResponseEntity.status(HttpStatus.OK).body(alumnoCarreraService.update(alumnoCarrera));
+            System.out.println("El AlumnoCarreraRequestDTO es : "+ alumnoCarreraRequestDTO.toString());
+            return ResponseEntity.status(HttpStatus.OK).body(alumnoCarreraService.update(alumnoCarreraRequestDTO));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error. No se pudo editar, revise los campos e intente nuevamente.\"}");
         }
@@ -82,7 +89,13 @@ public class AlumnoCarreraController {
     public ResponseEntity<?> delete(@PathVariable Long id){
         try{
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(alumnoCarreraService.delete(id));
-        }catch (Exception e){
+        }
+        catch (EntityNotFoundException e) {
+            // Si el ID no existe
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("{\"error\":\"No se encontró el alumno con ID " + id + ".\"}");
+        }
+        catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\":\"Error. No se pudo eliminar intente nuevamente.\"}");
         }
     }
